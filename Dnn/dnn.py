@@ -7,7 +7,7 @@ import os
 dir_path = "C:/Users/jonas/Documents/Development/playground/DeepLearning/Data"
 mnist = input_data.read_data_sets(dir_path, one_hot=True)
 train_size = mnist.train.num_examples
-test = mnist.test.num_examples
+test_size = mnist.test.num_examples
 features = 784
 classes = 10
 # Training HyperParameter
@@ -26,8 +26,8 @@ train_errors, test_errors = [], []
 train_accs, test_accs = [], []
 
 #Tf Placeholders for input and output of the dnn
-x = tf.placeholder(dtype=tf.float32, shape=[none, features], name="x")
-y = tf.placeholder(dtype=tf.float32, shape=[none, classes], name="y")
+x = tf.placeholder(dtype=tf.float32, shape=[None, features], name="x")
+y = tf.placeholder(dtype=tf.float32, shape=[None, classes], name="y")
 
 # Weights Vars
 W1 = tf.Variable(tf.truncated_normal([layer_nodes[0], layer_nodes[1]], stddev=stddev), name="W1") # Input to Hidden
@@ -58,9 +58,22 @@ def nn_run():
     # Start Tensorflow Session
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        #Training
+        # Training
         for epoch in range(epochs):
             train_acc, train_loss = 0.0, 0.0
             test_acc, test_loss = 0.0, 0.0
-            #Train Weights
+            # Train Weights
+            for i in range(train_mini_batches):
+                epoch_x, epoch_y = mnist.train.next_batch(train_batch_size)
+                feed_dict= {x: epoch_x, y: epoch_y}
+                sess.run(optimizer, feed_dict=feed_dict)
             
+            # Check the performance of the train set
+            for i in range(train_mini_batches):
+                epoch_x, epoch_y = mnist.train.next_batch(train_batch_size)
+                feed_dict = {x: epoch_x, y:epoch_y}
+                a, c = sess.run([accuarancy, cost], feed_dict=feed_dict)
+                train_acc +=a
+                train_loss +=c
+                train_acc = train_acc / train_mini_batches
+                train_loss = train_loss / train_mini_batches
